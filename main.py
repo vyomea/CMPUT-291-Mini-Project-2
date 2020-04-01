@@ -11,7 +11,7 @@ def main():
     while not quit:
         query = input(">>> ").lower()
 
-        if query == ":quit":
+        if query == "QUIT":
             print("Thank you for using our service")
 
         elif query == "output=breif":
