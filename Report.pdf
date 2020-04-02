@@ -1,0 +1,49 @@
+Parser Overview:
+
+The main point of the parser is to break down the 
+query into different components that can be further
+evaluated easily. It uses four functions to do so:
+
+KeyWordParser: 
+    Input: Query
+    Description: Parser to separate the terms from the query.
+    Method: Works using distance between words to classify
+    words as terms and keywords. 
+    Further classfies each term into an rterm or pterm boolean.
+    Output: A dictionary of terms with their respective flags.
+
+ScoreParser:
+    Input: Query
+    Description: Parser to separate the scores from the query.
+    Method: Uses re to find patterns and partitions
+    to ensure the handling of multiple score words.
+    Output: A tuple (low,high) denoting the interval.
+
+PriceParser:
+    Input: Query
+    Description: Parser to separate the price from the query.
+    Method: Uses re to find patterns and partitions
+    to ensure the handling of multiple score words.
+    Output: A tuple (low,high) denoting the interval.
+
+DateParser:
+    Input: Query
+    Description: Parser to separate the date from the query.
+    Method: Uses partition to separate the date, and
+    searches for a pattern of inequality signs.
+    Output: A tuple bound (low,high) for the range 
+    of dates. 
+
+Testing Strategy:
+
+The main method of testing was ensuring all edge cases are strictly handled
+by testing each individual component separately.
+Then,we used the given files for testing, and made up queries in
+order to test the parser. Upon the completion of which, we moved
+on to full fledged testing with the proper running of the code.
+
+Division of work:
+We used GitHub as the platform to manage our work.
+Vyome handled Phase1, query optimization, built indices, and handled the connection.
+Sutanshu handled Phase2, and mainly, the Parser. 
+The two of us tested the project, documented the code, and wrote the other documents.
