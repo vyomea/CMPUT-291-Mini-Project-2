@@ -1,7 +1,7 @@
 
 import re
 def termParser(query):
-    a,b,c,x,y,z="","","","","",""
+    a,b,c,x,y,z,p,q,r,l,m,n="","","","","","","","","","","",""
     modFlag,ptermFlag,rtermFlag = False,False,False
     if re.search(r"pterm",query):
         a,b,c = query.partition("pterm")
@@ -15,10 +15,8 @@ def termParser(query):
                 c = templist[0]
         if "%" in c:
             c = str(c.split("%")[0])
-        if " " in c.strip():
-            f = c.split(" ")
-            b = c.split(" ")[2]
-            c = c.split(" ")[1]
+        p,q,r = c.strip().partition(" ")
+        c=c.strip().split(" ")[0]
     if re.search(r"rterm",query):
         x,y,z = query.partition("rterm")  
         rtermFlag=True
@@ -31,18 +29,18 @@ def termParser(query):
                 z = templist[0]
         if "%" in z:
             z = str(z.split("%")[0])
-        if " " in z.strip():
-            y = z.split(" ")[2]
-            z = z.split(" ")[1]
+        l,m,n = z.strip().partition(" ")
+        z = z.strip().split(" ")[0]
+
 
     if re.search(r"%",query):
         modFlag = True
     if ptermFlag or modFlag or rtermFlag:
-        return (modFlag,ptermFlag,c.strip(),rtermFlag,z.strip(),b.strip(),y.strip())  #b.strip is pterm second word, y.strip is rterm second word
+        return (modFlag,ptermFlag,c.strip(),rtermFlag,z.strip(),r.strip(),n.strip())  #b.strip is pterm second word, y.strip is rterm second word
     else:
         return False
 
-print(termParser("rterm: great sound%"))
+print(termParser("rterm: great sound pterm: guitar"))
 
 def scoreparser(query):
     low1,high1,low2,high2 = False,False,False,False
@@ -156,7 +154,6 @@ def priceparser(query):
     else:
         return False
 
-print(priceparser("price>40 price <30"))
 def dateparser(query):
     low1,low2,high1,high2=False,False,False,False
     low,high = "",""
