@@ -15,6 +15,10 @@ def termParser(query):
                 c = templist[0]
         if "%" in c:
             c = str(c.split("%")[0])
+        if " " in c.strip():
+            f = c.split(" ")
+            b = c.split(" ")[2]
+            c = c.split(" ")[1]
     if re.search(r"rterm",query):
         x,y,z = query.partition("rterm")  
         rtermFlag=True
@@ -27,12 +31,18 @@ def termParser(query):
                 z = templist[0]
         if "%" in z:
             z = str(z.split("%")[0])
+        if " " in z.strip():
+            y = z.split(" ")[2]
+            z = z.split(" ")[1]
+
     if re.search(r"%",query):
         modFlag = True
     if ptermFlag or modFlag or rtermFlag:
-        return (modFlag,ptermFlag,c.strip(),rtermFlag,z.strip())
+        return (modFlag,ptermFlag,c.strip(),rtermFlag,z.strip(),b.strip(),y.strip())  #b.strip is pterm second word, y.strip is rterm second word
     else:
         return False
+
+print(termParser("rterm: great sound%"))
 
 def scoreparser(query):
     low1,high1,low2,high2 = False,False,False,False
@@ -169,4 +179,4 @@ def dateparser(query):
         return (low,high) 
     return False
             
-print(dateparser("date > 4000/31/31 date < 9000/31/12"))
+print(dateparser("date>4000/31/31date<9000/31/12"))
