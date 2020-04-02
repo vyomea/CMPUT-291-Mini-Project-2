@@ -1,3 +1,15 @@
+Instructions:
+
+1. Build the index files:
+`./build_index.sh`
+
+2.Run the python file:
+`python3 main.py`
+
+
+
+
+
 Parser Overview:
 
 The main point of the parser is to break down the 
