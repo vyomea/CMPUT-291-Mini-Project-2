@@ -2,6 +2,16 @@
 import re
 def keywordsParser(query):
     stopwords = ['pterm','rterm','price','score','date']
+    if ':' in query:
+        query = ' '.join(query.split(':'))
+    if '>' in query:
+        query = ' '.join(query.split('>'))
+    if '<' in query:
+        query = ' '.join(query.split('<'))
+    for i in stopwords:
+        if i in query:
+            query = ' '.join(query.split(i))
+
     querywords = query.split()
     resultwords  = [word for word in querywords if word.lower() not in stopwords]
     result = ' '.join(resultwords)
@@ -9,14 +19,17 @@ def keywordsParser(query):
     new=[]
     output=[]
     for i in result:
-        if i.isdigit():
-            continue
+        try:
+            if i.isdigit() or float(i):
+                continue
+        except:
+            pass
         new.append(i)
     for i in new:
         if len(i)>1:
             output.append(i)
     return output
-print(keywordsParser("guitar % good price > 200 sound%"))
+print(keywordsParser("pterm : guitar sound% price < 400.3score>3"))
 def termParser(query):
     a,b,c,x,y,z,p,q,r,l,m,n="","","","","","","","","","","",""
     modFlag,ptermFlag,rtermFlag = False,False,False
