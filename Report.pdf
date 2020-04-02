@@ -6,6 +6,22 @@ Instructions:
 2.Run the python file:
 `python3 main.py`
 
+Information about files:
+
+build_index.sh overview:
+Bashscript which sorts the given files and creates indices pt.idx(btree), rtidx(btree), sc.idx(btree),
+and rw.idx(hash)
+
+main.py overview:
+Provides the interface for the user to input the queries. The input is then parsed
+and sent to the info module for its execution.
+
+connection.py:
+Opens the idx files created by build_index.sh, gets the cursors and closes the idx files and the cursors.
+
+
+info.py:
+Responsible for executing the query inserted by the user.
 
 
 
