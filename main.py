@@ -1,27 +1,39 @@
+from connection import Connection
+from info import Info
+
 def main():
-    output_brief = False
-    output_full = False
+    output_type = "brief" # default
 
     #Print the welcome message:
     print("Welcome to this searcher!")
-    print("To quit, please enter :quit")
+    print("To quit, please enter ::quit")
+
+    conn = Connection()
+    conn.connect()
+    cursors = conn.get_cursors()
+
+    parser = None
+
+    info = Info(parser, cursors, output_type)
 
     quit = False
 
     while not quit:
-        query = input(">>> ").lower()
+        query = input("(Searcher)>>> ").lower()
 
-        if query == "QUIT":
+        if query == "::quit":
             print("Thank you for using our service")
+            conn.close()
+            break
 
         elif query == "output=breif":
-            output_brief = True
+            output_type = "brief"
         
         elif query == "output=full":
-            output_full = True
+            output_type = "full"
 
         else:
-            pass
+            info.execute_score()
 
 
 
