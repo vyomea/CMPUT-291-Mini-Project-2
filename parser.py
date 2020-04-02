@@ -1,5 +1,22 @@
 
 import re
+def keywordsParser(query):
+    stopwords = ['pterm','rterm','price','score','date']
+    querywords = query.split()
+    resultwords  = [word for word in querywords if word.lower() not in stopwords]
+    result = ' '.join(resultwords)
+    result = result.split()
+    new=[]
+    output=[]
+    for i in result:
+        if i.isdigit():
+            continue
+        new.append(i)
+    for i in new:
+        if len(i)>1:
+            output.append(i)
+    return output
+print(keywordsParser("guitar % good price > 200 sound%"))
 def termParser(query):
     a,b,c,x,y,z,p,q,r,l,m,n="","","","","","","","","","","",""
     modFlag,ptermFlag,rtermFlag = False,False,False
@@ -32,11 +49,10 @@ def termParser(query):
         l,m,n = z.strip().partition(" ")
         z = z.strip().split(" ")[0]
 
-
     if re.search(r"%",query):
         modFlag = True
     if ptermFlag or modFlag or rtermFlag:
-        return (modFlag,ptermFlag,c.strip(),rtermFlag,z.strip(),r.strip(),n.strip())  #b.strip is pterm second word, y.strip is rterm second word
+        return (modFlag,ptermFlag,c.strip(),rtermFlag,z.strip(),r.strip(),n.strip())  
     else:
         return False
 
@@ -95,10 +111,6 @@ def scoreparser(query):
     else:
         return False
     
-print(scoreparser("score < 40"))
-"""query = "rterm: guitar score > 6"
-print(termParser(query))
-print(scoreparser(query))"""
 
 def priceparser(query):
     low1,high1,low2,high2 = False,False,False,False
@@ -108,7 +120,6 @@ def priceparser(query):
     if re.search(r"price",query):
         a,b,c = query.partition("price")
         if "price" in c:
-            print(c)
             x,y,z = c.partition("price")
             condition2 = z.strip()[0]
             if condition2 == ">":
@@ -190,4 +201,3 @@ def dateparser(query):
         return (low,high) 
     return False
             
-print(dateparser("date>4000/31/31date<9000/31/12"))
