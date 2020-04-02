@@ -12,9 +12,6 @@ def main():
     conn.connect()
     cursors = conn.get_cursors()
 
-    parser = None
-
-    info = Info(parser, cursors, output_type)
 
     quit = False
 
@@ -33,7 +30,8 @@ def main():
             output_type = "full"
 
         else:
-            info.execute_score()
+            info = Info(query, cursors, output_type)
+            info.execute_query()
 
 
 
