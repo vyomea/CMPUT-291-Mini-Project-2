@@ -1,6 +1,10 @@
 
 import re
 def keywordsParser(query):
+    copyquery = query
+    a,b,c = "","",""
+    a1,a2=[],[]
+    ptermflag,rtermflag = False,False
     stopwords = ['pterm','rterm','price','score','date']
     if ':' in query:
         query = ' '.join(query.split(':'))
@@ -28,8 +32,27 @@ def keywordsParser(query):
     for i in new:
         if len(i)>1:
             output.append(i)
-    return output
-print(keywordsParser("pterm : guitar sound% price < 400.3score>3"))
+    keypair = {}
+    for i in output:
+        keypair[i]=(False,False) #0 is for pterm 1 is for rterm
+        a,b,c = copyquery.partition(i)
+        reverse = a[::-1]
+        x = reverse.find("mretp")
+        y = reverse.find("mretr")
+        if x == -1 and y== -1:
+            keypair[i]=(False,False)
+        if x>0 and y>0:
+            if x<y:
+                keypair[i]=(True,False)
+            else:
+                keypair[i]=(False,True)
+        if x<0 and y>0:
+            keypair[i]=(False,True)
+        if x>0 and y<0:
+            keypair[i]=(True,False)
+
+    return keypair
+print(keywordsParser("pterm: abcd% rterm : guitar sound% price < 400.3score>3"))
 def termParser(query):
     a,b,c,x,y,z,p,q,r,l,m,n="","","","","","","","","","","",""
     modFlag,ptermFlag,rtermFlag = False,False,False
