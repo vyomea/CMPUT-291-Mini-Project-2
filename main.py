@@ -30,8 +30,12 @@ def main():
             output_type = "full"
 
         else:
-            info = Info(query, cursors, output_type)
-            info.execute_query()
+            try:
+                info = Info(query, cursors, output_type)
+                info.execute_query()
+
+            except Exception:
+                print("No matches found!")
 
 
 
