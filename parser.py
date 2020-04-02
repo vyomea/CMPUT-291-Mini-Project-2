@@ -35,23 +35,85 @@ def termParser(query):
         return False
 
 def scoreparser(query):
-    low, high = False,False
+    low1,high1,low2,high2 = False,False,False,False
+    condition1,condition2 = "",""
+    digit1,digit2=0,0
     if re.search(r"score",query):
-        condition = query.split("score")[1].strip()[0]
-        if condition == ">":
-            high = True
-        if condition == "<":
-            low == True
-        if low == False and high == False:
-            return False
+        a,b,c = query.partition("score")
+        if "score" in c:
+            print(c)
+            x,y,z = c.partition("score")
+            condition2 = z.strip()[0]
+            if condition2 == ">":
+                high2 = True
+            if condition2 == "<":
+                low2 = True
+            if low2 == False and high2 == False:
+                return False  
+            try:
+                print(z.split(condition2)[1].strip())
+                digit2 = int(z.split(condition2)[1].strip())
+            except ValueError:
+                print("Wrong digit")
+                return False
+        condition1= c.strip()[0]
+        if condition1== ">":
+            high1 = True
+        if condition1 == "<":
+            low1 = True
+        if low1 == False and high1 == False:
+            return False  
         try:
-            digit = int(query.split(condition)[1].strip()[0])
+            digit1 = int(c.split(condition1)[1].strip().split("score")[0].strip())
         except ValueError:
-            print("Invalid digit")
-            return False
-        return (low,high,digit)
-    return False
+            print("Wrong digit")
+            return False 
+        return (low1,high1,digit1,low2,high2,digit2) 
+    else:
+        return False
+    
 
-query = "rterm: guitar score > 6"
+"""query = "rterm: guitar score > 6"
 print(termParser(query))
-print(scoreparser(query))
+print(scoreparser(query))"""
+
+def priceparser(query):
+    low1,high1,low2,high2 = False,False,False,False
+    condition1,condition2 = "",""
+    digit1,digit2=0,0
+    if re.search(r"price",query):
+        a,b,c = query.partition("price")
+        if "price" in c:
+            print(c)
+            x,y,z = c.partition("price")
+            condition2 = z.strip()[0]
+            if condition2 == ">":
+                high2 = True
+            if condition2 == "<":
+                low2 = True
+            if low2 == False and high2 == False:
+                return False  
+            try:
+                print(z.split(condition2)[1].strip())
+                digit2 = int(z.split(condition2)[1].strip())
+            except ValueError:
+                print("Wrong digit")
+                return False
+        condition1= c.strip()[0]
+        if condition1== ">":
+            high1 = True
+        if condition1 == "<":
+            low1 = True
+        if low1 == False and high1 == False:
+            return False  
+        try:
+            digit1 = int(c.split(condition1)[1].strip().split("price")[0].strip())
+        except ValueError:
+            print("Wrong digit")
+            return False 
+        return (low1,high1,digit1,low2,high2,digit2) 
+    else:
+        return False
+    
+print(priceparser("price>400 price<500"))
+print(scoreparser("score>400 score>4054"))
