@@ -13,12 +13,6 @@ class Connection:
         self.pterms_db = db.DB()
         self.rterms_db = db.DB()
 
-        # Set flags
-        self.reviews_db.set_flags(db.DB_DUP)
-        self.scores_db.set_flags(db.DB_DUP)
-        self.pterms_db.set_flags(db.DB_DUP)
-        self.rterms_db.set_flags(db.DB_DUP)
-
     def connect(self):
         """
         Connect to the databases and get the cursors
@@ -52,6 +46,9 @@ class Connection:
         self.scores_db.close()
         self.pterms_db.close()
         self.rterms_db.close()
+
+    def get_cursors(self):
+        return self.reviews_cursor, self.scores_cursor, self.pterms_cursor, self.rterms_cursor
 
     
     
