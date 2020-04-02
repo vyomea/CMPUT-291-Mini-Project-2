@@ -38,7 +38,7 @@ def keywordsParser(query):
         x = reverse.find("mretp")
         y = reverse.find("mretr")
         z=-1
-        minz=100000
+        minz=float('inf')
         a = []
         for j in keypair.keys():
             a.append(reverse.find(j[::-1]))
