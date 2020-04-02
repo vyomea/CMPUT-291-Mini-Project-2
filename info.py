@@ -40,8 +40,6 @@ class Info:
     
     def execute_term(self):
 
-        exists = True
-
         matches = set()
         product_title = None
 
@@ -70,7 +68,6 @@ class Info:
                     result = self.pterms_cursor.next()
 
             if len(matches) == 0:
-                    exists = False
                     print("No matches found!")
 
                     return
@@ -111,10 +108,67 @@ class Info:
             matches = matches.intersection(matches_2)
 
             if len(matches) == 0:
-                exists = False
                 print("No matches found!")
 
                 return 
+
+        #terms
+        if len(self.terms) > 0:
+            for term in self.terms:
+                if term[-1] != "%":
+                    result = self.pterms_cursor.set_range(term.encode("utf-8"))
+                    
+                    while result != None:
+                        product_title = result[0].decode("utf-8").lower()
+                        review_id = int(result[1].decode("utf-8"))
+
+                        if term == product_title:
+                            matches.add(review_id)
+
+                        result = self.pterms_cursor.next()
+                    
+
+                    result = self.rterms_cursor.set_range(term.encode("utf-8"))
+
+                    while result != None:
+                        review_summ_text = result[0].decode("utf-8")
+                        review_id = int(result[1].decode("utf-8"))
+
+                        if term == review_summ_text:
+                            if self.pterm:
+                                matches_2.add(review_id)
+                            else:
+                                matches_2.add(review_id)
+                                matches.add(review_id)
+
+
+                        result = self.rterms_cursor.next()
+                    
+                else:
+                    term = term[:-1]
+                    result = self.pterms_cursor.set_range(term.encode("utf-8"))
+
+                    while result != None:
+                        if result[0].decode("utf-8").startswith(term):
+                            matches.add(int(result[1].decode("utf-8")))
+                        
+                        result = self.pterms_cursor.next()
+
+                    result = self.rterms_cursor.set_range(term.encode("utf-8"))
+
+                    while result != None:
+                        if result[0].decode("utf-8").startswith(term):
+                            if self.pterm:
+                                matches_2.add(int(result[1].decode("utf-8")))
+                            else:
+                                matches_2.add(int(result[1].decode("utf-8")))
+                                matches.add(int(result[1].decode("utf-8")))
+                            
+                        result = self.rterms_cursor.next()
+
+            matches = matches.intersection(matches_2)
+
+
 
         matches_2 = set()
         # score
