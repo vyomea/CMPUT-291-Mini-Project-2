@@ -3,8 +3,6 @@ import re
 def keywordsParser(query):
     copyquery = query
     a,b,c = "","",""
-    a1,a2=[],[]
-    ptermflag,rtermflag = False,False
     stopwords = ['pterm','rterm','price','score','date']
     if ':' in query:
         query = ' '.join(query.split(':'))
@@ -39,6 +37,22 @@ def keywordsParser(query):
         reverse = a[::-1]
         x = reverse.find("mretp")
         y = reverse.find("mretr")
+        z=-1
+        minz=100000
+        a = []
+        for j in keypair.keys():
+            a.append(reverse.find(j[::-1]))
+        for k in a:
+            if k>0 and k<minz:
+                minz=k
+        if x!=-1 and x<minz:
+            keypair[i]=(True,False)
+        if y!=-1 and y<minz:
+            keypair[i] = (False,True)
+        else:
+            keypair[i] == (False,False)
+        if z==-1:
+            continue        
         if x == -1 and y== -1:
             keypair[i]=(False,False)
         if x>0 and y>0:
@@ -50,49 +64,7 @@ def keywordsParser(query):
             keypair[i]=(False,True)
         if x>0 and y<0:
             keypair[i]=(True,False)
-
     return keypair
-print(keywordsParser("pterm: abcd% rterm : guitar sound% price < 400.3score>3"))
-def termParser(query):
-    a,b,c,x,y,z,p,q,r,l,m,n="","","","","","","","","","","",""
-    modFlag,ptermFlag,rtermFlag = False,False,False
-    if re.search(r"pterm",query):
-        a,b,c = query.partition("pterm")
-        ptermFlag = True
-        c = str(c.split(":")[1])
-        if "rterm" in c:
-            templist = c.split("rterm")
-            if templist[0] == "rterm":
-                c = templist[1]
-            else:
-                c = templist[0]
-        if "%" in c:
-            c = str(c.split("%")[0])
-        p,q,r = c.strip().partition(" ")
-        c=c.strip().split(" ")[0]
-    if re.search(r"rterm",query):
-        x,y,z = query.partition("rterm")  
-        rtermFlag=True
-        z = str(z.split(":")[1])
-        if "pterm" in z:
-            templist = z.split("pterm")
-            if templist[0] == "pterm":
-                z = templist[1]
-            else:
-                z = templist[0]
-        if "%" in z:
-            z = str(z.split("%")[0])
-        l,m,n = z.strip().partition(" ")
-        z = z.strip().split(" ")[0]
-
-    if re.search(r"%",query):
-        modFlag = True
-    if ptermFlag or modFlag or rtermFlag:
-        return (modFlag,ptermFlag,c.strip(),rtermFlag,z.strip(),r.strip(),n.strip())  
-    else:
-        return False
-
-print(termParser("rterm: great sound pterm: guitar"))
 
 def scoreparser(query):
     low1,high1,low2,high2 = False,False,False,False
