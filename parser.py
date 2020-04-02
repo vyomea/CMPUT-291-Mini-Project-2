@@ -77,6 +77,14 @@ def scoreparser(query):
         except ValueError:
             print("Wrong digit")
             return False 
+        if high2 == False and low2 == False:
+            if condition1 == ">":
+                low = digit1
+                high = None
+            if condition1 == "<":
+                high = digit1
+                low = None
+            return (low,high)
         if high2:
             low = digit2
         else:
@@ -89,7 +97,7 @@ def scoreparser(query):
     else:
         return False
     
-
+print(scoreparser("score < 40"))
 """query = "rterm: guitar score > 6"
 print(termParser(query))
 print(scoreparser(query))"""
@@ -125,10 +133,17 @@ def priceparser(query):
             return False  
         try:
             digit1 = int(re.search(r'{}\s*(\d+)'.format(condition1),c).group(1))
-            #digit1 = int(c.split(condition1)[1].strip().split("price")[0].strip())
         except ValueError:
             print("Wrong digit")
             return False 
+        if high2 == False and low2 == False:
+            if condition1 == ">":
+                low = digit1
+                high = None
+            if condition1 == "<":
+                high = digit1
+                low = None
+            return (low,high)
         if high2:
             low = digit2
         else:
@@ -141,8 +156,7 @@ def priceparser(query):
     else:
         return False
 
-# date > 2007/05/16
-
+print(priceparser("price>40 price <30"))
 def dateparser(query):
     low1,low2,high1,high2=False,False,False,False
     low,high = "",""
