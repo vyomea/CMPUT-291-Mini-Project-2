@@ -17,8 +17,22 @@ class Info:
 
         #Query details
         self.score_low, self.score_high = parser.scoreparser(query)
-        
-        self.modFlag, self.ptermFlag, self.pterm, self.rtermFlag, self.rterm = parser.termParser(query)
+        self.pterm = None
+        self.rterm = None
+        self.terms = set()
+
+        self.term_dict = parser.keywordsParser(query)
+
+        # Assuming there is only one pterm and rterm
+        for word in self.term_dict:
+            if self.term_dict[word] == (True, False):
+                self.pterm = word
+            
+            elif self.term_dict[word] == (False, True):
+                self.rterm = word
+            
+            elif self.term_dict[word] == (False, False):
+                self.terms.add(word)
 
         self.date_low, self.date_high = parser.dateparser(query)
 
@@ -29,53 +43,71 @@ class Info:
         exists = True
 
         matches = set()
-        other_term = None
         product_title = None
 
-        if self.ptermFlag:
-            self.pterm = self.pterm.split()[0]
-            result = self.pterms_cursor.set_range(self.pterm.encode("utf-8"))
-            
+        if self.pterm:
 
-            while result != None:
-                product_title = result[0].decode("utf-8").lower()
+            if self.pterm[-1] != "%":
+                result = self.pterms_cursor.set_range(self.pterm.encode("utf-8"))
                 
+                while result != None:
+                    product_title = result[0].decode("utf-8").lower()
+                    review_id = int(result[1].decode("utf-8"))
 
-                # if len(result) > 1:
-                #     other_term = result[0].decode("utf-8").split()[1]
-                review_id = int(result[1].decode("utf-8"))
-
-                if self.pterm == product_title:
-                    matches.add(review_id)
-
-                result = self.pterms_cursor.next()
-            
-            if len(matches) == 0:
-                exists = False
-                print("No matches found!")
-
-                return
-
-        matches_2 = set()
-        print("RTERM: {}".format(self.rterm))
-        if self.rtermFlag:
-            self.rterm = self.rterm.split()[0]
-            result = self.rterms_cursor.set_range(self.rterm.encode("utf-8"))
-
-            while result != None:
-                review_summ_text = result[0].decode("utf-8")
-                review_id = int(result[1].decode("utf-8"))
-
-                if self.rterm == review_summ_text:
-                    if self.ptermFlag:
-                        matches_2.add(review_id)
-                    else:
-                        matches_2.add(review_id)
+                    if self.pterm == product_title:
                         matches.add(review_id)
 
+                    result = self.pterms_cursor.next()
+                
+            else:
+                self.pterm = self.pterm[:-1]
+                result = self.pterms_cursor.set_range(self.pterm.encode("utf-8"))
 
-                result = self.rterms_cursor.next()
+                while result != None:
+                    if result[0].decode("utf-8").startswith(self.pterm):
+                        matches.add(int(result[1].decode("utf-8")))
+                    
+                    result = self.pterms_cursor.next()
+
+            if len(matches) == 0:
+                    exists = False
+                    print("No matches found!")
+
+                    return
+
+        matches_2 = set()
+        if self.rterm:
+            if self.rterm[-1] != "%":
+                result = self.rterms_cursor.set_range(self.rterm.encode("utf-8"))
+
+                while result != None:
+                    review_summ_text = result[0].decode("utf-8")
+                    review_id = int(result[1].decode("utf-8"))
+
+                    if self.rterm == review_summ_text:
+                        if self.pterm:
+                            matches_2.add(review_id)
+                        else:
+                            matches_2.add(review_id)
+                            matches.add(review_id)
+
+
+                    result = self.rterms_cursor.next()
             
+            else:
+                self.rterm = self.rterm[:-1]
+                result = self.rterms_cursor.set_range(self.rterm.encode("utf-8"))
+
+                while result != None:
+                    if result[0].decode("utf-8").startswith(self.rterm):
+                        if self.pterm:
+                            matches_2.add(int(result[1].decode("utf-8")))
+                        else:
+                            matches_2.add(int(result[1].decode("utf-8")))
+                            matches.add(int(result[1].decode("utf-8")))
+                        
+                    result = self.rterms_cursor.next()
+
             matches = matches.intersection(matches_2)
 
             if len(matches) == 0:
@@ -106,7 +138,7 @@ class Info:
                 
                 if review_score > float(score_low_n) and review_score < float(score_high_n):
             
-                    if not (self.ptermFlag or self.rtermFlag):
+                    if not (self.pterm or self.rterm):
                         matches.add(review_id)
                         matches_2.add(review_id)
                     else:
@@ -171,7 +203,9 @@ class Info:
                 matches.remove(element)
 
         if len(matches) > 0:
-            self.get_data_brief(matches)
+            print(matches)
+            if self.output_type == "brief":
+                self.get_data_brief(matches)
         else:
             print("No matches found!")
 
@@ -222,6 +256,37 @@ class Info:
 
         return score
 
+    def get_user_id(self, record):
+        record_value = record[1].decode("utf-8")
+        p_title_start = record_value.index("\"")
+        s = record_value[p_title_start + 1:]
+        p_title_end = s.index('"')
+        s2 = s[p_title_end + 1:]
+        user_id_start = s2.index('"')
+        s3 = s2[user_id_start + 1:]
+
+        record_value_stripped = s3.split(",")
+        user_id = record_value_stripped[0]
+
+        return user_id
+    
+    def get_profile_name(self, record):
+        record_value = record[1].decode("utf-8")
+        p_title_start = record_value.index("\"")
+        s = record_value[p_title_start + 1:]
+        p_title_end = s.index('"')
+        s2 = s[p_title_end + 1:]
+        user_id_start = s2.index('"')
+        s3 = s2[user_id_start + 1:]
+        user_id_end = s3.index('"')
+        s4 = s3[user_id_end + 1:]
+
+        record_value_stripped = s4.split(",")
+        score = record_value_stripped[0]
+
+        return score
+
+
 
     def get_data_brief(self, matches):
 
@@ -230,8 +295,24 @@ class Info:
             review_id = int(res[0].decode("utf-8"))
             record_value = res[1].decode("utf-8").split(",")
             product_title = record_value[1]
-            # product_price = res[3].decode("utf-8")
-            # user_id = res[4].decode("utf-8")
+            review_score = self.get_score(res)
+            
+            print("-"*50)
+            print("Review ID: {}".format(review_id))
+            print("Product Title: {}".format(product_title))
+            print("Review Score: {}".format(review_score))
+            print()
+
+    def get_data_full(self, matches):
+
+        for match in matches:
+            res = self.reviews_cursor.set("{}".format(match).encode("utf-8"))
+            review_id = int(res[0].decode("utf-8"))
+            record_value = res[1].decode("utf-8").split(",")
+            product_id = record_value[0]
+            product_title = record_value[1]
+            product_price = self.get_price(res)
+            user_id = self.get_user_id(res)
             # profile_name = res[5].decode("utf-8")
             # helpfulness = res[6].decode("utf-8")
             review_score = self.get_score(res)
@@ -244,6 +325,7 @@ class Info:
             print("Product Title: {}".format(product_title))
             print("Review Score: {}".format(review_score))
             print()
+
 
 
 
