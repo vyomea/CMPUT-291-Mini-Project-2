@@ -80,6 +80,7 @@ class Info:
         scores.txt: (review score, review id)
         """
 
+        exists = True
         result = self.scores_cursor.set_range("{}".format(self.score_low).encode("utf-8"))
          # result[0] = review score, result[1] = review ID    
 
@@ -88,9 +89,20 @@ class Info:
         if result != None:
             while result != None and int(result[0].decode("utf-8")) <= self.score_high:
                 review_id = result[1].decode("utf-8")
+                review_score = result[0].decode("utf-8")
 
-                if True:
-                    pass
+                if self.ptermFlag:
+                    review_id_pterm = self.pterms_cursor.set_range(self.pterm.encode("utf-8"))[0]
+
+                    if review_id_pterm != review_id:
+                        exists = False
+
+                if self.rtermFlag:
+                    review_id_rterm = self.rterms_cursor.set_range(self.pterm.encode("utf-8"))[0]
+
+                    if review_id_rterm != review_id:
+                        exists = False
+
 
 
 
