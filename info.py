@@ -257,11 +257,10 @@ class Info:
                 matches.remove(element)
 
         if len(matches) > 0:
-            print(matches)
-            self.get_data_full(matches)
-            return
             if self.output_type == "brief":
                 self.get_data_brief(matches)
+            else:
+                self.get_data_full(matches)
         else:
             print("No matches found!")
 
@@ -281,8 +280,6 @@ class Info:
         date = record_value_stripped[3]
 
         return int(date)
-
-
     
     def get_price(self, record):
         record_value = record[1].decode("utf-8")
@@ -374,20 +371,26 @@ class Info:
 
     def get_review_summary(self, record):
         record_value = record[1].decode("utf-8")
-        p_title_start = record_value.index('"')
+        p_title_start = record_value.index("\"")
         s = record_value[p_title_start + 1:]
         p_title_end = s.index('"')
         s2 = s[p_title_end + 1:]
-        profile_name_start = s2.index('"')
-        s3 = s2[profile_name_start + 1:]
-        profile_name_end = s3.index('"')
-        s4 = s3[profile_name_end + 1:]
-        review_summary_start = s4.index('"')
-        s5 = s4[review_summary_start + 1:]
-        review_summary_end = s5.index('"')
-        s6 = s5[review_summary_start:review_summary_end]
 
-        review_summary = s6
+        record_value_stripped = s2.split(",")
+        review_summary = record_value_stripped[7]
+        char = ''
+
+        while char != '"':
+            for i in range(8, 11):
+                if char == '"':
+                    break
+                for j in range(len(record_value_stripped[i])):
+                    if record_value_stripped[i][j] == '"':
+                        char = '"'
+                        break
+                    else:
+                        review_summary += record_value_stripped[i][j]
+        review_summary += '"'
 
         return review_summary
 
