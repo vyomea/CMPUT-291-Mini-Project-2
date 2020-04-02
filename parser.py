@@ -37,11 +37,11 @@ def termParser(query):
 def scoreparser(query):
     low1,high1,low2,high2 = False,False,False,False
     condition1,condition2 = "",""
+    high,low = 0,0
     digit1,digit2=0,0
     if re.search(r"score",query):
         a,b,c = query.partition("score")
         if "score" in c:
-            print(c)
             x,y,z = c.partition("score")
             condition2 = z.strip()[0]
             if condition2 == ">":
@@ -51,8 +51,7 @@ def scoreparser(query):
             if low2 == False and high2 == False:
                 return False  
             try:
-                print(z.split(condition2)[1].strip())
-                digit2 = int(z.split(condition2)[1].strip())
+                digit2 = int(re.search(r'{}\s*(\d+)'.format(condition2),z).group(1))
             except ValueError:
                 print("Wrong digit")
                 return False
@@ -64,11 +63,19 @@ def scoreparser(query):
         if low1 == False and high1 == False:
             return False  
         try:
-            digit1 = int(c.split(condition1)[1].strip().split("score")[0].strip())
+           digit1 = int(re.search(r'{}\s*(\d+)'.format(condition1),c).group(1))
         except ValueError:
             print("Wrong digit")
             return False 
-        return (low1,high1,digit1,low2,high2,digit2) 
+        if high2:
+            low = digit2
+        else:
+            low = digit1
+        if low2:
+            high = digit2
+        else:
+            high = digit1
+        return (low,high)  
     else:
         return False
     
@@ -79,6 +86,7 @@ print(scoreparser(query))"""
 
 def priceparser(query):
     low1,high1,low2,high2 = False,False,False,False
+    low,high = 0,0
     condition1,condition2 = "",""
     digit1,digit2=0,0
     if re.search(r"price",query):
@@ -94,8 +102,7 @@ def priceparser(query):
             if low2 == False and high2 == False:
                 return False  
             try:
-                print(z.split(condition2)[1].strip())
-                digit2 = int(z.split(condition2)[1].strip())
+                digit2 = int(re.search(r'{}\s*(\d+)'.format(condition2),z).group(1))
             except ValueError:
                 print("Wrong digit")
                 return False
@@ -107,13 +114,59 @@ def priceparser(query):
         if low1 == False and high1 == False:
             return False  
         try:
-            digit1 = int(c.split(condition1)[1].strip().split("price")[0].strip())
+            digit1 = int(re.search(r'{}\s*(\d+)'.format(condition1),c).group(1))
+            #digit1 = int(c.split(condition1)[1].strip().split("price")[0].strip())
         except ValueError:
             print("Wrong digit")
             return False 
-        return (low1,high1,digit1,low2,high2,digit2) 
+        if high2:
+            low = digit2
+        else:
+            low = digit1
+        if low2:
+            high = digit2
+        else:
+            high = digit1
+        return (low,high) 
     else:
         return False
-    
-print(priceparser("price>400 price<500"))
-print(scoreparser("score>400 score>4054"))
+
+# date > 2007/05/16
+
+def dateparser(query):
+    low1,low2,high1,high2=False,False,False,False
+    low,high = "",""
+    condition1,condition2 = "",""
+    date1,date2="",""
+    if re.search(r"date",query):
+        a,b,c = query.partition("date")
+        if "date" in c:
+            x,y,z = c.partition("date")
+            condition2 = z.strip()[0]
+            if condition2 == ">":
+                high2 = True
+            if condition2 == "<":
+                low2 = True
+            if low2 == False and high2 == False:
+                return False 
+            date2 = re.search(r'(\d+/\d+/\d+)',z).group(1)
+        condition1 = c.strip()[0]
+        if condition1 == ">":
+            high1 = True
+        if condition1 == "<":
+            low1 = True
+        if low1 == False and high1 == False:
+            return False
+        date1 = re.search(r'(\d+/\d+/\d+)',c).group(1)
+        if high2:
+            low = date2
+        else:
+            low = date1
+        if low2:
+            high = date2
+        else:
+            high = date1
+        return (low,high) 
+    return False
+            
+print(dateparser("date > 4000/31/31 date < 9000/31/12"))
