@@ -152,7 +152,7 @@ def scoreparser(query):
             high = digit1
         return (low, high)
     else:
-        return False
+        return (None, None)
 
 def priceparser(query):
     """
@@ -226,7 +226,7 @@ def priceparser(query):
             high = digit1
         return (low, high)
     else:
-        return False
+        return (None, None)
 
 def dateparser(query):
     """
@@ -270,4 +270,4 @@ def dateparser(query):
         else:
             high = date1
         return (low, high)
-    return False
+    return (None, None)
