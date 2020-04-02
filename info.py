@@ -1,4 +1,5 @@
 import parser
+from datetime import datetime
 
 class Info:
 
@@ -21,7 +22,7 @@ class Info:
 
         self.date_low, self.date_high = parser.dateparser(query)
 
-        #self.price_low, self.price_high = parser.priceparser(query)
+        self.price_low, self.price_high = parser.priceparser(query)
     
     def execute_term(self):
 
@@ -30,9 +31,6 @@ class Info:
         matches = set()
         other_term = None
         product_title = None
-
-        print("THIS: {}".format(self.pterm))
-        
 
         if self.ptermFlag:
             self.pterm = self.pterm.split()[0]
@@ -54,11 +52,9 @@ class Info:
             
             if len(matches) == 0:
                 exists = False
-                print("NOO")
+                print("No matches found!")
 
-                return # TODO
-        
-        num = len(matches)
+                return
 
         matches_2 = set()
         print("RTERM: {}".format(self.rterm))
@@ -68,9 +64,6 @@ class Info:
 
             while result != None:
                 review_summ_text = result[0].decode("utf-8")
-                
-                # if len(result) > 1:
-                #     other_term = result[0].decode("utf-8").split()[1]
                 review_id = int(result[1].decode("utf-8"))
 
                 if self.rterm == review_summ_text:
@@ -87,17 +80,12 @@ class Info:
 
             if len(matches) == 0:
                 exists = False
-                print("NOO2")
+                print("No matches found!")
 
-                return # TODO
-        
-        num = len(matches)
-
+                return 
 
         matches_2 = set()
         # score
-        print("HIII")
-        print(self.score_low, self.score_high)
         if self.score_low or self.score_high:
             if not self.score_low:
                 score_low_n = 0.0
@@ -111,7 +99,6 @@ class Info:
 
             result = self.scores_cursor.set_range("{}".format(score_low_n).encode("utf-8"))
             # result[0] = review score, result[1] = review ID
-            print("SCORE: {}".format( float(result[0].decode("utf-8"))))
 
             while result != None:
                 review_score = float(result[0].decode("utf-8"))
@@ -128,29 +115,135 @@ class Info:
                 result = self.scores_cursor.next()
 
             matches = matches.intersection(matches_2)
-        print(len(matches_2))
-        print("Hello")
-        print(len(matches))
 
 
-    def get_data(self, matches):
+        #price
+
+        price_low_n = None
+        price_high_n = None
+        if (len(matches) > 0) and not (self.price_low == None or self.price_high == None):
+            if self.price_low == None:
+                price_low_n = 0.0
+            else:
+                price_low_n = self.price_low
+
+            if self.price_high == None:
+                price_high_n = float("inf")
+            else:
+                price_high_n = self.price_high
+
+            to_remove = []
+            for match in matches:
+                result = self.reviews_cursor.set("{}".format(match).encode("utf-8"))
+                price = self.get_price(result)
+
+                if price == "unknown" or not (float(price) > price_low_n and float(price) < price_high_n):
+                    to_remove.append(match)
+
+            for element in to_remove:
+                matches.remove(element)
+
+        #date
+        if (len(matches) > 0) and not (self.date_low == None or self.date_high == None):
+
+            to_remove = []
+            for match in matches:
+                result = self.reviews_cursor.set("{}".format(match).encode("utf-8"))
+                date = self.get_date(result) #timestamp
+                date_obj = datetime.fromtimestamp(date)
+
+                date_high_tp = datetime.timestamp(datetime.strptime(self.date_high,'%Y/%m/%d'))
+                date_obj_high = datetime.fromtimestamp(date_high_tp)
+
+                date_low_tp = datetime.timestamp(datetime.strptime(self.date_low,'%Y/%m/%d'))
+                date_obj_low = datetime.fromtimestamp(date_low_tp)
+
+                if self.date_low:
+                    if self.date_high:
+
+                        if date_obj >= date_obj_high:
+                            to_remove.append(match)
+
+                    if date_obj <= date_obj_low:
+                        to_remove.append(match)  
+
+            for element in to_remove:
+                matches.remove(element)
+
+        if len(matches) > 0:
+            self.get_data_brief(matches)
+        else:
+            print("No matches found!")
+
+
+    def get_date(self, record):
+        record_value = record[1].decode("utf-8")
+        p_title_start = record_value.index("\"")
+        s = record_value[p_title_start + 1:]
+        p_title_end = s.index('"')
+        s2 = s[p_title_end + 1:]
+        user_id_start = s2.index('"')
+        s3 = s2[user_id_start + 1:]
+        user_id_end = s3.index('"')
+        s4 = s3[user_id_end + 1:]
+
+        record_value_stripped = s4.split(",")
+        date = record_value_stripped[3]
+
+        return int(date)
+
+
+    
+    def get_price(self, record):
+        record_value = record[1].decode("utf-8")
+        p_title_start = record_value.index("\"")
+        s = record_value[p_title_start + 1:]
+        p_title_end = s.index('"')
+        s2 = s[p_title_end + 1:]
+    
+        record_value_stripped =  s2.split(",")
+        price = record_value_stripped[1]
+
+        return price
+    
+    def get_score(self, record):
+        record_value = record[1].decode("utf-8")
+        p_title_start = record_value.index("\"")
+        s = record_value[p_title_start + 1:]
+        p_title_end = s.index('"')
+        s2 = s[p_title_end + 1:]
+        user_id_start = s2.index('"')
+        s3 = s2[user_id_start + 1:]
+        user_id_end = s3.index('"')
+        s4 = s3[user_id_end + 1:]
+
+        record_value_stripped = s4.split(",")
+        score = record_value_stripped[2]
+
+        return score
+
+
+    def get_data_brief(self, matches):
 
         for match in matches:
             res = self.reviews_cursor.set("{}".format(match).encode("utf-8"))
-            print(len(res))
             review_id = int(res[0].decode("utf-8"))
-            product_id = res[1].decode("utf-8")
-            # product_title = res[2].decode("utf-8")
+            record_value = res[1].decode("utf-8").split(",")
+            product_title = record_value[1]
             # product_price = res[3].decode("utf-8")
             # user_id = res[4].decode("utf-8")
             # profile_name = res[5].decode("utf-8")
             # helpfulness = res[6].decode("utf-8")
-            # review_score = res[7].decode("utf-8")
+            review_score = self.get_score(res)
             # review_timestamp = res[8].decode("utf-8")
             # review_summary = res[9].decode("utf-8")
             # review_full_text = res[10].decode("utf-8")
-
-            print("Review ID: {} Product ID: {}".format(review_id, product_id))
+            
+            print("-"*50)
+            print("Review ID: {}".format(review_id))
+            print("Product Title: {}".format(product_title))
+            print("Review Score: {}".format(review_score))
+            print()
 
 
 
