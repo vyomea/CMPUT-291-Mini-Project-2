@@ -38,7 +38,7 @@ class Info:
 
         self.price_low, self.price_high = parser.priceparser(query)
     
-    def execute_term(self):
+    def execute_query(self):
 
         matches = set()
         product_title = None
@@ -258,6 +258,8 @@ class Info:
 
         if len(matches) > 0:
             print(matches)
+            self.get_data_full(matches)
+            return
             if self.output_type == "brief":
                 self.get_data_brief(matches)
         else:
@@ -316,11 +318,9 @@ class Info:
         s = record_value[p_title_start + 1:]
         p_title_end = s.index('"')
         s2 = s[p_title_end + 1:]
-        user_id_start = s2.index('"')
-        s3 = s2[user_id_start + 1:]
 
-        record_value_stripped = s3.split(",")
-        user_id = record_value_stripped[0]
+        record_value_stripped = s2.split(",")
+        user_id = record_value_stripped[2]
 
         return user_id
     
@@ -330,15 +330,86 @@ class Info:
         s = record_value[p_title_start + 1:]
         p_title_end = s.index('"')
         s2 = s[p_title_end + 1:]
-        user_id_start = s2.index('"')
-        s3 = s2[user_id_start + 1:]
-        user_id_end = s3.index('"')
-        s4 = s3[user_id_end + 1:]
 
-        record_value_stripped = s4.split(",")
-        score = record_value_stripped[0]
+        record_value_stripped = s2.split(",")
+        profile_name = record_value_stripped[3]
 
-        return score
+        return profile_name
+
+    def get_helpfulness(self, record):
+        record_value = record[1].decode("utf-8")
+        p_title_start = record_value.index("\"")
+        s = record_value[p_title_start + 1:]
+        p_title_end = s.index('"')
+        s2 = s[p_title_end + 1:]
+
+        record_value_stripped = s2.split(",")
+        helpfulness = record_value_stripped[4]
+
+        return helpfulness
+    
+    def get_timestamp(self, record):
+        record_value = record[1].decode("utf-8")
+        p_title_start = record_value.index("\"")
+        s = record_value[p_title_start + 1:]
+        p_title_end = s.index('"')
+        s2 = s[p_title_end + 1:]
+
+        record_value_stripped = s2.split(",")
+        timestamp = record_value_stripped[6]
+
+        return timestamp
+
+
+    def get_product_title(self, record):
+        record_value = record[1].decode("utf-8")
+        p_title_start = record_value.index("\"")
+        s = record_value[p_title_start + 1:]
+        p_title_end = s.index('"')
+        s2 = s[p_title_start:p_title_end]
+
+        product_title = s2
+
+        return product_title
+
+    def get_review_summary(self, record):
+        record_value = record[1].decode("utf-8")
+        p_title_start = record_value.index('"')
+        s = record_value[p_title_start + 1:]
+        p_title_end = s.index('"')
+        s2 = s[p_title_end + 1:]
+        profile_name_start = s2.index('"')
+        s3 = s2[profile_name_start + 1:]
+        profile_name_end = s3.index('"')
+        s4 = s3[profile_name_end + 1:]
+        review_summary_start = s4.index('"')
+        s5 = s4[review_summary_start + 1:]
+        review_summary_end = s5.index('"')
+        s6 = s5[review_summary_start:review_summary_end]
+
+        review_summary = s6
+
+        return review_summary
+
+    def get_review_full(self, record):
+        record_value = record[1].decode("utf-8")
+        p_title_start = record_value.index('"')
+        s = record_value[p_title_start + 1:]
+        p_title_end = s.index('"')
+        s2 = s[p_title_end + 1:]
+        profile_name_start = s2.index('"')
+        s3 = s2[profile_name_start + 1:]
+        profile_name_end = s3.index('"')
+        s4 = s3[profile_name_end + 1:]
+        review_summary_start = s4.index('"')
+        s5 = s4[review_summary_start + 1:]
+        review_summary_end = s5.index('"')
+
+        review_full = s5[review_summary_end + 1:]
+
+        return review_full
+
+
 
 
 
@@ -364,20 +435,29 @@ class Info:
             review_id = int(res[0].decode("utf-8"))
             record_value = res[1].decode("utf-8").split(",")
             product_id = record_value[0]
-            product_title = record_value[1]
+            product_title = self.get_product_title(res)
             product_price = self.get_price(res)
             user_id = self.get_user_id(res)
-            # profile_name = res[5].decode("utf-8")
-            # helpfulness = res[6].decode("utf-8")
+            profile_name = self.get_profile_name(res)
+            helpfulness = self.get_helpfulness(res)
             review_score = self.get_score(res)
-            # review_timestamp = res[8].decode("utf-8")
-            # review_summary = res[9].decode("utf-8")
-            # review_full_text = res[10].decode("utf-8")
+            review_timestamp = self.get_timestamp(res)
+            review_summary = self.get_review_summary(res)
+            review_full_text = self.get_review_full(res)
             
             print("-"*50)
             print("Review ID: {}".format(review_id))
+            print("Product ID: {}".format(product_id))
             print("Product Title: {}".format(product_title))
+            print("Product Price: {}".format(product_price))
+            print("User ID: {}".format(user_id))
+            print("Profile name: {}".format(profile_name))
+            print("Helpfulness: {}".format(helpfulness))
             print("Review Score: {}".format(review_score))
+            print("Review Timestamp: {}".format(review_timestamp))
+            print("Review Summary: {}".format(review_summary))
+            print("Review Full: {}".format(review_full_text))
+
             print()
 
 
